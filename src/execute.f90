@@ -239,7 +239,7 @@ contains
       call perform_statistics(tal(i),nhist,geo%dx)
 
       ! print mean
-      write(*,'("Slab ",I0," Flux: ",F0.4)') i,tal(i)%mean
+      write(*,'("Slab ",I0,T10," Flux: ",F0.4)') i,tal(i)%mean
 
     end do
 
