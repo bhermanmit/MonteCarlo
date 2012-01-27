@@ -1,0 +1,7 @@
+To Compile:
+cd src
+make monte
+
+To Run:
+cd examples
+../src/monte < input
