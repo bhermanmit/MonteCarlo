@@ -11,7 +11,7 @@ contains
   subroutine initialize_rng()
 
     real :: rn
-    rn = rand(234231)
+    rn = rand(25)
 
   end subroutine initialize_rng
 

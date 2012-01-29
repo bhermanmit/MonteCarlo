@@ -22,6 +22,9 @@ contains
     integer :: n  ! history loop counter
     integer :: i  ! counter for tallies
 
+    ! initialize rng
+    call initialize_rng()
+
     ! initialize tallies
     do i = 1,geo%n_slabs
       call tally_init(tal(i))
@@ -33,16 +36,11 @@ contains
       ! initialize particle
       call particle_init(neutron,geo%length)
 
-!     print *,'Neutron BORN'
-!     print *,'Neutron is at x:',neutron%xloc
-!     print *,'Neutron mu is:',neutron%mu
-
       ! reset track tallies
       call reset_tallies()
 
       ! determine which slab the particle is in
       neutron%slab = get_slab_id()
-!     print *,'neutron is slab:',neutron%slab
 
       ! begin loop around particles life
       LIFE: do while (neutron%alive)
@@ -86,10 +84,10 @@ contains
 
       ! get the distance to next collision
       s = get_collision_distance(mat%totalxs)
-!     print *,'s =',s
+
       ! compute x component
       newx = neutron%xloc + s*neutron%mu 
-!     print *,'newx =',newx
+
       ! get nearest neigbor
       if (neutron%mu > 0.0) then
         neig = float(neutron%slab)*geo%dx
@@ -97,16 +95,14 @@ contains
         neig = float(neutron%slab - 1)*geo%dx
       end if
 
-!     print *,'Neighbor is:',neig
-
       ! check for surface crossing
       if ( (neutron%mu < 0.0 .and. newx < neig) .or.                           &
-           (neutron%mu > 0.0 .and. newx > neig) ) then
+     &     (neutron%mu > 0.0 .and. newx > neig) ) then
 
         ! check for global boundary crossing
-        if (newx < 0.0 .or. newx > geo%length) then
+        if ( (newx < 0.0 .and. neutron%slab == 1) .or.                         &
+       &      newx > geo%length .and. neutron%slab == geo%n_slabs) then
 
-!         print *,'Particle cross boundary'
           ! kill particle
           neutron%alive = .false.
 
@@ -129,9 +125,6 @@ contains
           neutron%slab = neutron%slab - 1
         end if
 
-!       print *,'Particle cross surface with track:',tal(neutron%slab)%track
-!       print *,'New x location:',neutron%xloc
-
       else ! collision occurred
 
         ! record distance in tally
@@ -139,10 +132,10 @@ contains
 
         ! move neutron
         neutron%xloc = newx
-!       print *,'Collision occurred move neutron to:',neutron%xloc
+
         ! set resample to false
         resample = .false.
- 
+
       end if
 
     end do 
@@ -165,19 +158,13 @@ contains
 
     if ( id == 1 ) then
 
-!     print *,'Neutron absorbed'
-
       ! kill particle
       neutron%alive = .false.
 
     else
 
-!     print *,'Neutron scattered'
-
       ! sample new angle
       neutron%mu = get_scatter_mu()
-
-!     print *,'New angle:',neutron%mu
 
     end if
 
