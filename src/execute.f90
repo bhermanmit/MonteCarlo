@@ -1,10 +1,11 @@
 module execute
 
   use global
-  use particle,  only: particle_init
   use pdfs
 
   implicit none
+  private
+  public :: run_problem,print_tallies
 
 contains
 
@@ -14,7 +15,17 @@ contains
 
   subroutine run_problem()
 
+    use particle,  only: particle_init
+    use tally, only: tally_init
+
+
     integer :: n  ! history loop counter
+    integer :: i  ! counter for tallies
+
+    ! initialize tallies
+    do i = 1,geo%n_slabs
+      call tally_init(tal(i))
+    end do
 
     ! begin history loop
     HISTORY: do n = 1,nhist
@@ -146,6 +157,9 @@ contains
 
     integer :: id
 
+    ! record tally
+    tal(neutron%slab)%coll = tal(neutron%slab)%coll + 1.0/mat%totalxs
+
     ! get reaction type
     id = get_collision_type(mat%absxs,mat%scattxs,mat%totalxs)
 
@@ -239,7 +253,7 @@ contains
       call perform_statistics(tal(i),nhist,geo%dx)
 
       ! print mean
-      write(*,'("Slab ",I0,T10," Flux: ",F0.4)') i,tal(i)%mean
+      write(*,'("Slab ",I0,T10," Flux: ",F0.4,T30,F0.4)') i,tal(i)%smean,tal(i)%cmean
 
     end do
 
