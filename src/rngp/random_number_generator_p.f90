@@ -1,5 +1,5 @@
 !==============================================================================!
-! MODULE: random_number_generator_p
+! MODULE: random_number_generator
 !
 !> @author Jeremy Roberts
 !>
@@ -91,7 +91,7 @@
 !> - "FUNDAMENTALS OF MONTE CARLO TRANSPORT", LA-UR-05-4983
 !>   http://...gov/publication/pdf/LA-UR-05-4983_Monte_Carlo_Lectures.pdf
 !-------------------------------------------------------------------------------
-module random_number_generator_p
+module random_number_generator
 
 
 	private ! default all module variables to be local within module routines
@@ -132,7 +132,7 @@ contains
       S    = iand( iand( g*S, TwoToMMinus1) + c,  TwoToMMinus1 )
       rand = S * OneOver2toM 
 
-  end function RandomNum
+  end function rand
 
   !============================================================================!
   !> @brief Initiates the random number generator for a new problem.
@@ -179,16 +179,16 @@ contains
   !> @brief Initiates the random number generator for a new problem.
   !>
   !> Warning: ONLY CALL THIS FROM THE MASTER THREAD!
-  !>
-  !> @param[in]   UserS         Integer value of seed (default is 5^19)
-  !> @param[in]   UserString    Integer value of stride between histories
   !============================================================================!
-  subroutine initialize_rng( UserS, UserStride )
+  subroutine initialize_rng()
 
       implicit none
 
-      integer(I8), intent(in) :: UserS
-      integer(I8), intent(in) :: UserStride
+      integer(I8) :: UserS
+      integer(I8) :: UserStride
+
+      UserS = 1234567_I8
+      UserStride = 0_I8
 
       ! Update defaults if user gives nonzero seed and/or stride
       if( UserS .gt. 0_I8 ) then
@@ -220,4 +220,4 @@ contains
 
   end subroutine initialize_rng_history
 
-end module Random
+end module random_number_generator
