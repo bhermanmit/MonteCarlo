@@ -32,6 +32,9 @@ contains
     ! begin history loop
     HISTORY: do n = 1, nhist
 
+			! initialize the random number generator for this history
+			call initialize_rng_history(n)
+
       ! initialize particle
       call particle_init(neutron, geo%length)
 
@@ -66,7 +69,7 @@ contains
       call bank_tallies()
 
       ! update user
-      if ( mod(n,100000) == 0 ) then
+      if ( mod(n, 100000) == 0 ) then
         write(*,'("Successfully transported: ",I0," particles...")') n
       end if
 
@@ -98,14 +101,13 @@ contains
 #endif
 
       ! compute x component
-      newx = neutron%xloc + s*neutron%mu 
+      newx = neutron%xloc + neutron%mu * s
 
 #ifdef DEBUG
       print *,'newx =',newx
 #endif
 
       ! get nearest neigbor
-      if (neutron%mu .eq. 0.0) stop "mu = 0"
       if (neutron%mu > 0.0) then
         neig = float(neutron%slab)*geo%dx
       else
@@ -117,15 +119,12 @@ contains
 #endif
 
       ! check for surface crossing
-      if ( (neutron%mu < 0.0 .and. newx < neig)   .or.                         &
+      if ( (neutron%mu < 0.0 .and. newx < neig) .or.                           &
            (neutron%mu > 0.0 .and. newx > neig) ) then
 
         ! check for global boundary crossing
-        if (newx <= 0.0 .or. newx >= geo%length) then
-
-#ifdef DEBUG
-          print *,'Particle cross boundary'
-#endif
+        if ( (newx < 0.0 .and. neutron%slab == 1) .or.                         &
+              newx > geo%length .and. neutron%slab == geo%n_slabs) then
 
           ! kill particle
           neutron%alive = .false.
@@ -149,11 +148,6 @@ contains
           neutron%slab = neutron%slab - 1
         end if
 
-#ifdef DEBUG
-        print *,'Particle cross surface with track:', tal(neutron%slab)%track
-        print *,'New x location:', neutron%xloc
-#endif
-
       else ! collision occurred
 
         ! record distance in tally
@@ -162,13 +156,13 @@ contains
         ! move neutron
         neutron%xloc = newx
 
+        ! set resample to false
+        resample = .false.
+
 #ifdef DEBUG
         print *,'Collision occurred move neutron to:', neutron%xloc
 #endif
 
-        ! set resample to false
-        resample = .false.
- 
       end if
 
     end do 
@@ -183,7 +177,7 @@ contains
     integer :: id
 
     ! get reaction type
-    id = get_collision_type(mat%absxs,mat%scattxs,mat%totalxs)
+    id = get_collision_type(mat%absxs, mat%scattxs, mat%totalxs)
 
     if ( id == 1 ) then
 

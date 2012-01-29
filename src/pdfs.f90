@@ -73,10 +73,10 @@ contains
   !=============================================================================
   function get_collision_distance(xs)
 
-    double precision              :: get_collision_distance, rn
+    double precision              :: get_collision_distance
     double precision, intent(in)  :: xs
 
-    get_collision_distance = -log(rand())/xs
+    get_collision_distance = -log(rand()) /xs
 
   end function get_collision_distance
 
@@ -106,7 +106,7 @@ contains
     integer                       :: get_collision_type
     double precision, intent(in)  :: absxs, scattxs, totxs
     double precision              :: rn
-    
+
     ! get rn
     rn = rand()
 

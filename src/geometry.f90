@@ -11,7 +11,7 @@ module geometry
 
   private
 
-  public :: read_geometry, default_geometry
+  public :: read_geometry
 
   !=============================================================================
   !> @brief Defines the geometry.
@@ -45,25 +45,5 @@ contains
     this%dx = this%length/this%n_slabs
 
   end subroutine read_geometry
-
-  !=============================================================================
-  !> @brief Use a default geometry.
-  !>
-  !> @param[in]     this      A reference to a geometry object
-  !=============================================================================
-  subroutine default_geometry(this)
-
-    type(geometry_type), intent(inout) :: this
-
-    ! set the slab length
-    this%length = 5.0
-
-    ! set the number of subslabs
-    this%n_slabs = 5
-
-    ! calculate dx
-    this%dx = this%length/this%n_slabs
-
-  end subroutine default_geometry
 
 end module geometry

@@ -211,13 +211,13 @@ contains
   !>
   !> @param[in]   History       Current particle history
   !============================================================================!
-  subroutine initialize_particle(History)
+  subroutine initialize_rng_history(History)
 
       implicit none
       integer(I8), intent(in) :: History
       S  = RN_skip_ahead( S0, History*Stride )
       return
 
-  end subroutine initialize_particle
+  end subroutine initialize_rng_history
 
 end module Random

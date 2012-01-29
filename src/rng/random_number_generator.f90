@@ -48,6 +48,20 @@ contains
 
   end subroutine initialize_rng
 
+  !============================================================================! 
+  !> @brief Initialize the random number generator for a new history.
+  !>
+  !> For this implementation of the PRNG library, this function is not 
+  !> needed, but the interface must be supported anyway.
+  !>
+  !> @param[in] 	n 		Current neutron history
+  !============================================================================!
+  subroutine initialize_rng_history(n)
+  
+    integer, intent(in) :: n
+		! do nothing.
+
+  end subroutine initialize_rng_history
 
   !============================================================================!
   !> @brief Obtain a single random number.

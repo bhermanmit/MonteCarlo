@@ -41,20 +41,16 @@ program main
 
   use execute,  only: run_problem, print_tallies
   use global
-  use geometry, only: read_geometry, default_geometry
-  use material, only: read_material, default_material
+  use geometry, only: read_geometry
+  use material, only: read_material
 
   implicit none
 
-!  ! read input from user
-!  write(*,*) 'How many particles would you like to simulate?'
-!  read(*,*) nhist
-!  call read_geometry(geo) 
-!  call read_material(mat)
-
-  nhist = 1e8
-  call default_geometry(geo)
-  call default_material(mat)
+  ! read input from user
+  write(*,*) 'How many particles would you like to simulate?'
+  read(*,*) nhist
+  call read_geometry(geo) 
+  call read_material(mat)
 
   ! allocate the problem
   call allocate_problem()

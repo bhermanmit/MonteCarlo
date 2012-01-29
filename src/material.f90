@@ -1,8 +1,15 @@
+!==============================================================================!
+! MODULE: material
+!
+!> @author Bryan Herman
+!>
+!> @brief Cross section data.
+!==============================================================================!
 module material
 
   implicit none
   private
-  public :: read_material, default_material
+  public :: read_material
 
   type, public :: material_type
 
@@ -31,21 +38,6 @@ contains
     read(*,*) this%scattxs
 
   end subroutine read_material
-
-  subroutine default_material(this)
-
-    type(material_type) :: this
-
-    ! set total xs
-    this%totalxs = 1.0
-
-    ! set absorption xs
-    this%absxs = 0.5
-
-    ! set scattering xs
-    this%scattxs = 0.5
-
-  end subroutine default_material
 
 
 end module material
