@@ -6,4 +6,5 @@ main.o \
 material.o \
 particle.o \
 pdfs.o \
-tally.o
+tally.o \
+random_number_generator.o 

@@ -1,43 +1,61 @@
+!==============================================================================!
+! MODULE: execute
+!
+!> @author Bryan Herman
+!>
+!> @brief Main routines for running the problem.
+!==============================================================================!
 module execute
 
   use global
   use particle,  only: particle_init
   use pdfs
+  use random_number_generator, only: initialize_rng
 
   implicit none
 
+! Uncomment this if diagnostic output is needed.  Note, this requires -cpp.
+!#define DEBUG
+
 contains
 
-!===============================================================================
-!
-!===============================================================================
-
+  !=============================================================================
+  !> @brief Run the simulation.
+  !=============================================================================
   subroutine run_problem()
 
     integer :: n  ! history loop counter
 
+    ! initialize the random number generator
+    call initialize_rng()
+
     ! begin history loop
-    HISTORY: do n = 1,nhist
+    HISTORY: do n = 1, nhist
 
       ! initialize particle
-      call particle_init(neutron,geo%length)
+      call particle_init(neutron, geo%length)
 
-!     print *,'Neutron BORN'
-!     print *,'Neutron is at x:',neutron%xloc
-!     print *,'Neutron mu is:',neutron%mu
+#ifdef DEBUG
+     print *,'Neutron BORN'
+     print *,'Neutron is at x:', neutron%xloc
+     print *,'Neutron mu is:', neutron%mu
+#endif
 
       ! reset track tallies
       call reset_tallies()
 
       ! determine which slab the particle is in
       neutron%slab = get_slab_id()
-!     print *,'neutron is slab:',neutron%slab
 
-      ! begin loop around particles life
+#ifdef DEBUG
+      print *,'neutron is slab:', neutron%slab
+#endif
+
+      ! begin loop around particle's life
       LIFE: do while (neutron%alive)
 
         ! tranpsort neutron
-        call transport()
+        call transport(n)
 
         ! get interaction type
         if(neutron%alive) call interaction()
@@ -48,7 +66,7 @@ contains
       call bank_tallies()
 
       ! update user
-      if ( mod(n,1000) == 0 ) then
+      if ( mod(n,100000) == 0 ) then
         write(*,'("Successfully transported: ",I0," particles...")') n
       end if
 
@@ -56,46 +74,59 @@ contains
 
   end subroutine run_problem
 
-!===============================================================================
-!
-!===============================================================================
-
-  subroutine transport()
-
-    real :: s     ! free flight distance
-    real :: newx  ! the temp newx location
-    real :: neig  ! nearest neighbor surface in traveling direction
+  !=============================================================================
+  !> @brief Perform transport of a single particle
+  !=============================================================================
+  subroutine transport(n)
+    integer :: n
+    double precision :: s     ! free flight distance
+    double precision :: newx  ! the temp newx location
+    double precision :: neig  ! nearest neighbor surface in traveling direction
     logical :: resample ! resample the distance
 
     ! set resample
     resample = .true.
 
     ! begin while loop until collide
-    do while ( resample )
+    do while (resample)
 
       ! get the distance to next collision
       s = get_collision_distance(mat%totalxs)
-!     print *,'s =',s
+
+#ifdef DEBUG
+      print *,'s =',s
+#endif
+
       ! compute x component
       newx = neutron%xloc + s*neutron%mu 
-!     print *,'newx =',newx
+
+#ifdef DEBUG
+      print *,'newx =',newx
+#endif
+
       ! get nearest neigbor
+      if (neutron%mu .eq. 0.0) stop "mu = 0"
       if (neutron%mu > 0.0) then
         neig = float(neutron%slab)*geo%dx
       else
         neig = float(neutron%slab - 1)*geo%dx
       end if
 
-!     print *,'Neighbor is:',neig
+#ifdef DEBUG
+      print *,'Neighbor is:',neig
+#endif
 
       ! check for surface crossing
-      if ( (neutron%mu < 0.0 .and. newx < neig) .or.                           &
+      if ( (neutron%mu < 0.0 .and. newx < neig)   .or.                         &
            (neutron%mu > 0.0 .and. newx > neig) ) then
 
         ! check for global boundary crossing
-        if (newx < 0.0 .or. newx > geo%length) then
+        if (newx <= 0.0 .or. newx >= geo%length) then
 
-!         print *,'Particle cross boundary'
+#ifdef DEBUG
+          print *,'Particle cross boundary'
+#endif
+
           ! kill particle
           neutron%alive = .false.
 
@@ -106,7 +137,7 @@ contains
 
         ! record tally
         tal(neutron%slab)%track = tal(neutron%slab)%track +                    &
-       &                          (neig - neutron%xloc) / neutron%mu
+                                  (neig - neutron%xloc) / neutron%mu
 
         ! move particle to surface and resample
         neutron%xloc = neig
@@ -118,8 +149,10 @@ contains
           neutron%slab = neutron%slab - 1
         end if
 
-!       print *,'Particle cross surface with track:',tal(neutron%slab)%track
-!       print *,'New x location:',neutron%xloc
+#ifdef DEBUG
+        print *,'Particle cross surface with track:', tal(neutron%slab)%track
+        print *,'New x location:', neutron%xloc
+#endif
 
       else ! collision occurred
 
@@ -128,7 +161,11 @@ contains
 
         ! move neutron
         neutron%xloc = newx
-!       print *,'Collision occurred move neutron to:',neutron%xloc
+
+#ifdef DEBUG
+        print *,'Collision occurred move neutron to:', neutron%xloc
+#endif
+
         ! set resample to false
         resample = .false.
  
@@ -138,10 +175,9 @@ contains
 
   end subroutine transport
 
-!===============================================================================
-!
-!===============================================================================
-
+  !=============================================================================
+  !> @brief Determine and handle an interaction.
+  !=============================================================================
   subroutine interaction()
 
     integer :: id
@@ -151,28 +187,34 @@ contains
 
     if ( id == 1 ) then
 
-!     print *,'Neutron absorbed'
+#ifdef DEBUG
+      print *,'Neutron absorbed'
+#endif
 
       ! kill particle
       neutron%alive = .false.
 
     else
 
-!     print *,'Neutron scattered'
+#ifdef DEBUG
+      print *,'Neutron scattered'
+#endif
 
       ! sample new angle
       neutron%mu = get_scatter_mu()
 
-!     print *,'New angle:',neutron%mu
+#ifdef DEBUG
+      print *,'New angle:',neutron%mu
+#endif
 
     end if
 
   end subroutine interaction
 
-!===============================================================================
-!
-!===============================================================================
-
+  !=============================================================================
+  !> @brief Determine the slab in which a particle resides.
+  !> @return                  Slab ID
+  !=============================================================================
   function get_slab_id()
 
     integer :: get_slab_id
@@ -181,10 +223,9 @@ contains
 
   end function get_slab_id
 
-!===============================================================================
-!
-!===============================================================================
-
+  !=============================================================================
+  !> @brief Reset the tally array.
+  !=============================================================================
   subroutine reset_tallies()
 
     use tally, only: tally_reset
@@ -200,10 +241,9 @@ contains
 
   end subroutine reset_tallies
 
-!===============================================================================
-!
-!===============================================================================
-
+  !=============================================================================
+  !> @brief Add the current tallies to the mean and variance.
+  !=============================================================================
   subroutine bank_tallies()
 
     use tally, only: bank_tally
@@ -211,7 +251,7 @@ contains
     integer :: i  ! counter
 
     ! begin loop around tallies
-    do i = 1,geo%n_slabs
+    do i = 1, geo%n_slabs
 
       ! bank tally
       call bank_tally(tal(i))
@@ -220,10 +260,9 @@ contains
 
   end subroutine bank_tallies
 
-!===============================================================================
-!
-!===============================================================================
-
+  !=============================================================================
+  !> @brief Print the tally of each slab.
+  !=============================================================================
   subroutine print_tallies()
 
     use tally, only: perform_statistics
@@ -233,13 +272,13 @@ contains
     ! set results
     write(*,'(///,"Results",/,"=======",/)')
 
-    do i = 1,geo%n_slabs
+    do i = 1, geo%n_slabs
 
       ! compute stat
-      call perform_statistics(tal(i),nhist,geo%dx)
+      call perform_statistics(tal(i), nhist, geo%dx)
 
       ! print mean
-      write(*,'("Slab ",I0,T10," Flux: ",F0.4)') i,tal(i)%mean
+      write(*,'("Slab ",I0,T10," Flux: ",F0.4)') i, tal(i)%mean
 
     end do
 

@@ -2,13 +2,13 @@ module material
 
   implicit none
   private
-  public :: read_material
+  public :: read_material, default_material
 
   type, public :: material_type
 
-    real :: totalxs  ! macroscopic total cross section
-    real :: absxs    ! macroscopic absorption cross section
-    real :: scattxs  ! macroscopic scattering cross section
+    double precision :: totalxs  ! macroscopic total cross section
+    double precision :: absxs    ! macroscopic absorption cross section
+    double precision :: scattxs  ! macroscopic scattering cross section
 
   end type material_type
 
@@ -31,5 +31,21 @@ contains
     read(*,*) this%scattxs
 
   end subroutine read_material
+
+  subroutine default_material(this)
+
+    type(material_type) :: this
+
+    ! set total xs
+    this%totalxs = 1.0
+
+    ! set absorption xs
+    this%absxs = 0.5
+
+    ! set scattering xs
+    this%scattxs = 0.5
+
+  end subroutine default_material
+
 
 end module material

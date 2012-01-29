@@ -1,3 +1,10 @@
+!==============================================================================!
+! MODULE: particle
+!
+!> @author Bryan Herman
+!>
+!> @brief Routines for defining and manipulating a particle.
+!==============================================================================!
 module particle
 
   use pdfs
@@ -6,21 +13,28 @@ module particle
   private
   public :: particle_init
 
+  !=============================================================================
+  !> @brief Defines a particle.
+  !=============================================================================
   type, public :: particle_type
-
-    integer :: slab   ! the slab id number
-    real    :: xloc   ! location of particle in slab
-    real    :: mu     ! cosine of angle
-    logical :: alive  ! is the particle alive
-
+    integer :: slab           ! the slab id number
+    double precision :: xloc  ! location of particle in slab
+    double precision :: mu    ! cosine of angle
+    logical :: alive          ! is the particle alive
   end type particle_type
 
 contains
 
-  subroutine particle_init(this,L)
+  !=============================================================================
+  !> @brief Initialize a particle.
+  !>
+  !> @param[in]     this      A reference to a particle object
+  !> @param[in]     L         Total width of domain
+  !=============================================================================
+  subroutine particle_init(this, L)
 
-    type(particle_type) :: this
-    real :: L   ! length of slab
+    type(particle_type), intent(inout) :: this
+    double precision, intent(in) :: L   ! length of slab
 
     ! get the x location
     this%xloc = get_particle_pos(L)
