@@ -19,7 +19,7 @@ module random_number_generator
 
   private
 
-  public :: initialize_rng, rand
+  public :: initialize_rng,rand
 
 contains
 
@@ -59,7 +59,7 @@ contains
   subroutine initialize_rng_history(n)
   
     integer, intent(in) :: n
-		! do nothing.
+    ! do nothing.
 
   end subroutine initialize_rng_history
 

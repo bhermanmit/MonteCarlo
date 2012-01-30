@@ -46,9 +46,6 @@ contains
     ! begin history loop
     HISTORY: do n = 1, nhist
 
-    ! initialize the random number generator for this history
-    call initialize_rng_history(n)
-
       ! initialize particle
       call particle_init(neutron, geo%length)
 
@@ -72,7 +69,7 @@ contains
       LIFE: do while (neutron%alive)
 
         ! tranpsort neutron
-        call transport(n)
+        call transport()
 
         ! get interaction type
         if(neutron%alive) call interaction()
@@ -94,8 +91,8 @@ contains
   !=============================================================================
   !> @brief Perform transport of a single particle
   !=============================================================================
-  subroutine transport(n)
-    integer :: n
+  subroutine transport()
+
     double precision :: s     ! free flight distance
     double precision :: newx  ! the temp newx location
     double precision :: neig  ! nearest neighbor surface in traveling direction
