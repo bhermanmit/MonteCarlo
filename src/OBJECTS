@@ -6,4 +6,4 @@ main.o \
 material.o \
 particle.o \
 tally.o \
-timing.o 
+timing.o
