@@ -20,8 +20,7 @@ DEBUG    = no
 ifeq ($(COMPILER),gnu)
   F90 = gfortran
   F90FLAGS := -cpp -fbacktrace
-  LDFLAGS = -L ../lib
-  LIB = -lpdf
+  LDFLAGS = -L ../lib -lpdf
   INCLUDE = -I ../lib
 
   # Debugging
@@ -48,7 +47,7 @@ endif
 #===============================================================================
 
 $(program): $(objects)
-	$(F90) $(objects) -o $@ $(LDFLAGS) $(LIB)
+	$(F90) $(objects) -o $@ $(LDFLAGS)
 
 clean:
 	@rm -f *.o *.mod $(program)
