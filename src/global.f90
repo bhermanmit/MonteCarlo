@@ -28,15 +28,15 @@ module global
   !> the neutron that we follow
   type(particle_type) :: neutron
 
-  !> execution timer
-  type(Timer) :: timer_run
-
 !$omp threadprivate ( neutron, local_tal)
 
   !> number of particles to simulate
   integer :: nhist
 
   integer, parameter :: I8 = selected_int_kind(18)
+
+  !> execution timer
+  type(Timer) :: timer_run
 
 contains
 
