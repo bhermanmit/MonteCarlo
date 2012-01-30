@@ -11,7 +11,7 @@ include OBJECTS
 #===============================================================================
 
 COMPILER = gnu
-DEBUG    = no 
+DEBUG    = yes
 
 #===============================================================================
 # GNU Fortran compiler options
@@ -20,7 +20,9 @@ DEBUG    = no
 ifeq ($(COMPILER),gnu)
   F90 = gfortran
   F90FLAGS := -cpp -fbacktrace
-  LDFLAGS =
+  LDFLAGS = -L ./rng
+  LIB = -lrng
+  INCLUDE = -I ./rng
 
   # Debugging
   ifeq ($(DEBUG),yes)
@@ -46,7 +48,8 @@ endif
 #===============================================================================
 
 $(program): $(objects)
-	$(F90) $(objects) -o $@ $(LDFLAGS)
+	$(F90) $(objects) -o $@ $(LDFLAGS) $(LIB)
+
 clean:
 	@rm -f *.o *.mod $(program)
 neat:
@@ -60,7 +63,7 @@ neat:
 .PHONY: clean neat
 
 %.o: %.f90
-	$(F90) $(F90FLAGS) -c $<
+	$(F90) $(F90FLAGS) $(INCLUDE) -c $<
 
 #===============================================================================
 # Dependencies

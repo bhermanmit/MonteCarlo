@@ -1,3 +1,10 @@
+!==============================================================================!
+! MODULE: global
+!
+!> @author Bryan Herman
+!>
+!> @brief Global data and problem allocation.
+!==============================================================================!
 module global
 
   use geometry, only: geometry_type
@@ -8,29 +15,35 @@ module global
   implicit none
   save
 
-  ! define geometry
+  !> define geometry
   type(geometry_type) :: geo
 
-  ! define material
+  !> define material
   type(material_type) :: mat
 
-  ! define tally
-  type(tally_type),allocatable :: tal(:)
+  !> define tally array
+  type(tally_type), allocatable :: tal(:)
 
-  ! define particle
+  !> define particle
   type(particle_type) :: neutron
 
-  ! number of particles to simulate
+  !> number of particles to simulate
   integer :: nhist
 
 contains
 
+  !=============================================================================
+  !> @brief Allocate the tallies.
+  !=============================================================================
   subroutine allocate_problem()
 
     if (.not. allocated(tal)) allocate(tal(geo%n_slabs))
 
   end subroutine allocate_problem
 
+  !=============================================================================
+  !> @brief Free the tallies.
+  !=============================================================================
   subroutine free_memory()
 
     if (allocated(tal)) deallocate(tal)

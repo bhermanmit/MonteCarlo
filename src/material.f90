@@ -1,3 +1,10 @@
+!==============================================================================!
+! MODULE: material
+!
+!> @author Bryan Herman
+!>
+!> @brief Cross section data.
+!==============================================================================!
 module material
 
   implicit none
@@ -6,9 +13,9 @@ module material
 
   type, public :: material_type
 
-    real :: totalxs  ! macroscopic total cross section
-    real :: absxs    ! macroscopic absorption cross section
-    real :: scattxs  ! macroscopic scattering cross section
+    double precision :: totalxs  ! macroscopic total cross section
+    double precision :: absxs    ! macroscopic absorption cross section
+    double precision :: scattxs  ! macroscopic scattering cross section
 
   end type material_type
 
@@ -31,5 +38,6 @@ contains
     read(*,*) this%scattxs
 
   end subroutine read_material
+
 
 end module material
