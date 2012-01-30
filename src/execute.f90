@@ -113,8 +113,6 @@ contains
 
 !$omp end parallel
 
-!$ print *, "      total wall time: ", omp_get_wtime()-t
-
   end subroutine run_problem
 
   !=============================================================================
@@ -304,12 +302,20 @@ contains
   !=============================================================================
   subroutine print_tallies()
 
-    use tally, only: perform_statistics
+    use global, only: timer_run
+    use tally,  only: perform_statistics
 
     integer :: i
 
     ! set results
     write(*,'(///,"Results",/,"=======",/)')
+
+    ! print time
+    write(*,'("Execution Time:",2X,F0.4," seconds",/)') timer_run%elapsed
+
+    ! print tally header
+    write(*,'("Slab #",T10,"Flux - Tracklength",T30,"Flux - Collision")')
+    write(*,'("------",T10,"------------------",T30,"----------------")')
 
     do i = 1, geo%n_slabs
 
@@ -317,8 +323,7 @@ contains
       call perform_statistics(tal(i), nhist, geo%dx)
 
       ! print mean
-      write(*,'("Slab ",I0,T10," Flux: ",F0.4,T25,F0.4)')                      &
-     &         i,tal(i)%smean,tal(i)%cmean
+      write(*,'(I0,T10,F0.4,T30,F0.4)') i,tal(i)%smean,tal(i)%cmean
 
     end do
 

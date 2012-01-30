@@ -6,6 +6,8 @@ global.o: geometry.o
 global.o: material.o
 global.o: particle.o
 global.o: tally.o
+global.o: timing.o
 
 main.o: execute.o
 main.o: global.o
+main.o: timing.o

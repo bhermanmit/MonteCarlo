@@ -43,20 +43,27 @@ program main
   use global
   use geometry, only: read_geometry
   use material, only: read_material
+  use timing,   only: timer_start,timer_stop
 
   implicit none
 
   ! read input from user
   write(*,*) 'How many particles would you like to simulate?'
   read(*,*) nhist
-  call read_geometry(geo) 
+  call read_geometry(geo)
   call read_material(mat)
+
+  ! begin run timer
+  call timer_start(timer_run)
 
   ! allocate the problem
   call allocate_problem()
 
   ! run problem
   call run_problem()
+
+  ! end run timer
+  call timer_stop(timer_run)
 
   ! print results to user
   call print_tallies()

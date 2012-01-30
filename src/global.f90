@@ -11,6 +11,7 @@ module global
   use material, only: material_type
   use particle, only: particle_type
   use tally,    only: tally_type
+  use timing,   only: Timer
 
   implicit none
   save 
@@ -26,6 +27,9 @@ module global
 
   !> the neutron that we follow
   type(particle_type) :: neutron
+
+  !> execution timer
+  type(Timer) :: timer_run
 
 !$omp threadprivate ( neutron, local_tal)
 
