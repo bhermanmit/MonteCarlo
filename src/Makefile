@@ -11,7 +11,7 @@ include OBJECTS
 #===============================================================================
 
 COMPILER = gnu
-DEBUG    = yes
+DEBUG    = no 
 
 #===============================================================================
 # GNU Fortran compiler options
@@ -20,9 +20,9 @@ DEBUG    = yes
 ifeq ($(COMPILER),gnu)
   F90 = gfortran
   F90FLAGS := -cpp -fbacktrace
-  LDFLAGS = -L ./rng
-  LIB = -lrng
-  INCLUDE = -I ./rng
+  LDFLAGS = -L ../lib
+  LIB = -lpdf
+  INCLUDE = -I ../lib
 
   # Debugging
   ifeq ($(DEBUG),yes)

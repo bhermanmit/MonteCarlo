@@ -1,6 +1,5 @@
 execute.o: global.o
 execute.o: particle.o
-execute.o: pdfs.o
 execute.o: tally.o
 
 global.o: geometry.o
@@ -10,6 +9,3 @@ global.o: tally.o
 
 main.o: execute.o
 main.o: global.o
-
-particle.o: pdfs.o
-

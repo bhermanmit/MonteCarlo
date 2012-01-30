@@ -5,5 +5,4 @@ global.o \
 main.o \
 material.o \
 particle.o \
-pdfs.o \
 tally.o \
