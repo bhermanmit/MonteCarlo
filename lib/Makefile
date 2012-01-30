@@ -52,8 +52,8 @@ OBJS = random_number_generator.o \
 all : $(program)
 
 $(program): $(OBJS)
-	ar ruv libpdf.a $(OBJS)
-	$(RANLIB) libpdf.a
+	ar ruv $(program) $(OBJS)
+	$(RANLIB) $(program)
 
 clean:
 	@rm -f *.o *.mod $(program)

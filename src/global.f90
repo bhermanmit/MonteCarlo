@@ -11,6 +11,7 @@ module global
   use material, only: material_type
   use particle, only: particle_type
   use tally,    only: tally_type
+  use timing,   only: Timer
 
   implicit none
   save
@@ -29,6 +30,9 @@ module global
 
   !> number of particles to simulate
   integer :: nhist
+
+  !> execution timer
+  type(Timer) :: timer_run
 
 contains
 
