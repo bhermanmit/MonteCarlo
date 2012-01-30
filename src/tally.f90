@@ -102,8 +102,14 @@ contains
     integer, intent(in)             :: n_hist
 
     ! compute mean
-    this%smean = this%s1/(dx * n_hist)
-    this%cmean = this%c1/(dx * n_hist)
+    this%smean = this%s1/(dx * dble(n_hist))
+    this%cmean = this%c1/(dx * dble(n_hist))
+
+    ! compute variance
+    this%svar = 1.0_8/dble(n_hist - 1)*(this%s2/dble(n_hist) -                 &
+                (this%s1/dble(n_hist))**2)
+    this%cvar = 1.0_8/dble(n_hist - 1)*(this%c2/dble(n_hist) -                 &
+                (this%c1/dble(n_hist))**2)
 
   end subroutine perform_statistics
 
