@@ -8,12 +8,11 @@
 module execute
 
   use global
+  use particle,  only: particle_init
   use pdfs
-  use random_number_generator, only: initialize_rng
+  use random_number_generator, only: initialize_rng, initialize_rng_history
 
   implicit none
-  private
-  public :: run_problem,print_tallies
 
 ! Uncomment this if diagnostic output is needed.  Note, this requires -cpp.
 !#define DEBUG
@@ -27,14 +26,48 @@ contains
 
     use particle,  only: particle_init
 
-    integer :: n  ! history loop counter
-    integer :: i  ! counter for tallies
+    integer(I8) :: n  ! history loop counter
+    integer     :: i,j  ! loop index for tally update
+    double precision :: omp_get_wtime, t
+    integer    :: omp_get_thread_num
 
-    ! initialize the random number generator
+!$ t = omp_get_wtime()
+
+    ! initialize the random number generator (master only!!)
     call initialize_rng()
 
+    do i = 1, geo%n_slabs
+
+      ! zero global tallies
+      tal(i)%s1 = 0.0_8
+      tal(i)%s2 = 0.0_8
+
+    end do
+
+!$omp parallel private(n, i) shared(tal, nhist, mat, geo)
+
+    ! local tally allocation 
+    if (.not. allocated(local_tal)) allocate(local_tal(geo%n_slabs))
+    !print *, "i am ", omp_get_thread_num(), " num slabs = ",geo%n_slabs
+    
+
+    do i = 1, geo%n_slabs
+
+      ! zero local tallies
+      local_tal(i)%s1 = 0.0_8
+      local_tal(i)%s2 = 0.0_8
+      local_tal(i)%c1 = 0.0_8
+      local_tal(i)%c2 = 0.0_8
+
+    end do
+
     ! begin history loop
+
+!$omp do 
     HISTORY: do n = 1, nhist
+
+      ! initialize the random number generator for this history
+      call initialize_rng_history(n)
 
       ! initialize particle
       call particle_init(neutron, geo%length)
@@ -49,7 +82,7 @@ contains
       LIFE: do while (neutron%alive)
 
         ! tranpsort neutron
-        call transport()
+        call transport(n)
 
         ! get interaction type
         if(neutron%alive) call interaction()
@@ -60,23 +93,40 @@ contains
       call bank_tallies()
 
       ! update user
-      if ( mod(n, 100000) == 0 ) then
-        write(*,'("Successfully transported: ",I0," particles...")') n
-      end if
+!      if ( mod(n, 100000_I8) == 0 ) then
+!        write(*,'("Successfully transported: ",I0," particles...")') n
+!      end if
 
     end do HISTORY
+!$omp end do
+
+    ! Now combine the results in the master tally.  The "(tally)" denotation 
+    ! is optional and must be unique in a code.  Here, it just helps clarify.
+
+!$omp critical (tally)
+    do i = 1, geo%n_slabs
+      !print *, " i am ", omp_get_thread_num(), " j = ", i, " tal(j)s1 = ", local_tal(i)%s1
+      tal(i)%s1 = tal(i)%s1 + local_tal(i)%s1
+      tal(i)%s2 = tal(i)%s2 + local_tal(i)%s2
+      tal(i)%c1 = tal(i)%c1 + local_tal(i)%c1
+      tal(i)%c2 = tal(i)%c2 + local_tal(i)%c2
+    end do
+!$omp end critical (tally)
+
+!$omp end parallel
 
   end subroutine run_problem
 
   !=============================================================================
   !> @brief Perform transport of a single particle
   !=============================================================================
-  subroutine transport()
+  subroutine transport(n)
 
+    integer(I8) :: n          ! history index
     double precision :: s     ! free flight distance
     double precision :: newx  ! the temp newx location
     double precision :: neig  ! nearest neighbor surface in traveling direction
-    logical :: resample ! resample the distance
+    logical :: resample       ! resample the distance
 
     ! set resample
     resample = .true.
@@ -99,11 +149,11 @@ contains
 
       ! check for surface crossing
       if ( (neutron%mu < 0.0 .and. newx < neig) .or.                           &
-     &     (neutron%mu > 0.0 .and. newx > neig) ) then
+           (neutron%mu > 0.0 .and. newx > neig) ) then
 
         ! check for global boundary crossing
         if ( (newx < 0.0 .and. neutron%slab == 1) .or.                         &
-       &     (newx > geo%length .and. neutron%slab == geo%n_slabs)) then
+              newx > geo%length .and. neutron%slab == geo%n_slabs) then
 
           ! kill particle
           neutron%alive = .false.
@@ -114,7 +164,7 @@ contains
         end if
 
         ! record tally
-        tal(neutron%slab)%track = tal(neutron%slab)%track +                    &
+        local_tal(neutron%slab)%track = local_tal(neutron%slab)%track +                    &
                                   (neig - neutron%xloc) / neutron%mu
 
         ! move particle to surface and resample
@@ -130,7 +180,7 @@ contains
       else ! collision occurred
 
         ! record distance in tally
-        tal(neutron%slab)%track = tal(neutron%slab)%track + s 
+        local_tal(neutron%slab)%track = local_tal(neutron%slab)%track + s 
 
         ! move neutron
         neutron%xloc = newx
@@ -151,8 +201,9 @@ contains
 
     integer :: id
 
-    ! record tally
-    tal(neutron%slab)%coll = tal(neutron%slab)%coll + 1.0/mat%totalxs
+    ! tally collision
+    local_tal(neutron%slab)%coll = local_tal(neutron%slab)%coll +              &
+   &                               1.0_8/mat%totalxs
 
     ! get reaction type
     id = get_collision_type(mat%absxs, mat%scattxs, mat%totalxs)
@@ -193,9 +244,9 @@ contains
     integer :: i
 
     ! loop around and reset
-    do i = 1,geo%n_slabs
+    do i = 1, geo%n_slabs
 
-      call tally_reset(tal(i))
+      call tally_reset(local_tal(i))
 
     end do 
 
@@ -214,7 +265,7 @@ contains
     do i = 1, geo%n_slabs
 
       ! bank tally
-      call bank_tally(tal(i))
+      call bank_tally(local_tal(i))
 
     end do
 

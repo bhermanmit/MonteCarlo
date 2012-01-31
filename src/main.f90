@@ -50,7 +50,7 @@ program main
   ! read input from user
   write(*,*) 'How many particles would you like to simulate?'
   read(*,*) nhist
-  call read_geometry(geo) 
+  call read_geometry(geo)
   call read_material(mat)
 
   ! begin run timer

@@ -14,7 +14,7 @@ module global
   use timing,   only: Timer
 
   implicit none
-  save
+  save 
 
   !> define geometry
   type(geometry_type) :: geo
@@ -23,13 +23,17 @@ module global
   type(material_type) :: mat
 
   !> define tally array
-  type(tally_type), allocatable :: tal(:)
+  type(tally_type), allocatable :: tal(:), local_tal(:)
 
-  !> define particle
+  !> the neutron that we follow
   type(particle_type) :: neutron
+
+!$omp threadprivate ( neutron, local_tal)
 
   !> number of particles to simulate
   integer :: nhist
+
+  integer, parameter :: I8 = selected_int_kind(18)
 
   !> execution timer
   type(Timer) :: timer_run

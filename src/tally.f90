@@ -10,7 +10,7 @@ module tally
   implicit none
 
   private
-  public :: tally_reset,bank_tally,perform_statistics
+  public :: tally_reset, bank_tally, perform_statistics
 
   !=============================================================================
   !> A tally for a single slab region.
@@ -23,7 +23,7 @@ module tally
     double precision :: c1    = 0.0_8 ! collision accumulator
     double precision :: c2    = 0.0_8 ! square of collision accumulator
     double precision :: s1    = 0.0_8 ! path accumulator
-    double precision :: s2    = 0.0_8 ! square of path accumulator 
+    double precision :: s2    = 0.0_8 ! square of path accumulator
     double precision :: smean = 0.0_8 ! mean for tracklength est
     double precision :: cmean = 0.0_8 ! mean for collision est
     double precision :: svar  = 0.0_8 ! variance of tracklength est
@@ -45,7 +45,7 @@ contains
     type(tally_type), intent(inout) :: this
 
     this%track = 0.0_8
-    this%coll = 0.0_8
+    this%coll  = 0.0_8
 
   end subroutine tally_reset
 
@@ -59,10 +59,10 @@ contains
     type(tally_type) :: this
 
     ! bank tally
-    this%c1 = this%c1 + this%coll
-    this%c2 = this%c2 + this%coll**2
     this%s1 = this%s1 + this%track
     this%s2 = this%s2 + this%track**2
+    this%c1 = this%c1 + this%coll
+    this%c2 = this%c2 + this%coll**2
 
   end subroutine bank_tally
 

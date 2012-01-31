@@ -16,14 +16,14 @@ DEBUG    = no
 
 ifeq ($(COMPILER), intel)
   F90 = ifort
-  F90FLAGS += -fpp -warn
+  F90FLAGS += -fpp -warn -openmp
 endif
 
 # GNU Fortran compiler options
 
 ifeq ($(COMPILER), gnu)
   F90 = gfortran
-  F90FLAGS += -cpp -Wall
+  F90FLAGS += -cpp -Wall -fopenmp
 endif
 
 # Set compiler flags for debugging
@@ -46,8 +46,8 @@ RANLIB = ranlib
 # Targets
 #===============================================================================
 
-OBJS = random_number_generator.o \
-       pdfs.o 
+OBJS = random_number_generator_p.o \
+       pdfs.o
       
 all : $(program)
 
@@ -69,3 +69,4 @@ neat:
 
 %.o: %.f90
 	$(F90) $(F90FLAGS) -c $<
+

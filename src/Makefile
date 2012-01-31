@@ -11,7 +11,8 @@ include OBJECTS
 #===============================================================================
 
 COMPILER = gnu
-DEBUG    = no 
+DEBUG    = no
+OPTIMIZE = yes
 
 #===============================================================================
 # GNU Fortran compiler options
@@ -19,8 +20,8 @@ DEBUG    = no
 
 ifeq ($(COMPILER),gnu)
   F90 = gfortran
-  F90FLAGS := -cpp -fbacktrace
-  LDFLAGS = -L ../lib -lpdf
+  F90FLAGS := -cpp -fbacktrace -fopenmp
+  LDFLAGS = -L ../lib -lpdf -fopenmp
   INCLUDE = -I ../lib
 
   # Debugging
