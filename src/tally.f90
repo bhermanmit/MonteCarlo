@@ -10,7 +10,7 @@ module tally
   implicit none
 
   private
-  public :: tally_init,tally_reset,bank_tally,perform_statistics
+  public :: tally_reset,bank_tally,perform_statistics
 
   !=============================================================================
   !> A tally for a single slab region.
@@ -20,41 +20,20 @@ module tally
   !=============================================================================
   type, public :: tally_type
 
-    double precision :: c1    ! collision accumulator
-    double precision :: c2    ! square of collision accumulator
-    double precision :: s1    ! path accumulator
-    double precision :: s2    ! square of path accumulator 
-    double precision :: smean ! mean for tracklength est
-    double precision :: cmean ! mean for collision est
-    double precision :: svar  ! variance of tracklength est
-    double precision :: cvar  ! variance of collision est
-    double precision :: track ! the temp track var
-    double precision :: coll  ! the temp coll var
+    double precision :: c1    = 0.0_8 ! collision accumulator
+    double precision :: c2    = 0.0_8 ! square of collision accumulator
+    double precision :: s1    = 0.0_8 ! path accumulator
+    double precision :: s2    = 0.0_8 ! square of path accumulator 
+    double precision :: smean = 0.0_8 ! mean for tracklength est
+    double precision :: cmean = 0.0_8 ! mean for collision est
+    double precision :: svar  = 0.0_8 ! variance of tracklength est
+    double precision :: cvar  = 0.0_8 ! variance of collision est
+    double precision :: track = 0.0_8 ! the temp track var
+    double precision :: coll  = 0.0_8 ! the temp coll var
 
   end type tally_type
 
 contains
-
-!===============================================================================
-!
-!===============================================================================
-
-  subroutine tally_init(this)
-
-    type(tally_type) :: this
-
-    this%c1 = 0.0
-    this%c2 = 0.0
-    this%s1 = 0.0
-    this%s2 = 0.0
-    this%smean = 0.0
-    this%cmean = 0.0
-    this%svar = 0.0
-    this%cvar = 0.0
-    this%track = 0.0
-    this%coll = 0.0
-
-  end subroutine tally_init
 
   !=============================================================================
   !> @brief Reset a tally.
@@ -65,8 +44,8 @@ contains
 
     type(tally_type), intent(inout) :: this
 
-    this%track = 0.0
-    this%coll = 0.0
+    this%track = 0.0_8
+    this%coll = 0.0_8
 
   end subroutine tally_reset
 

@@ -26,19 +26,9 @@ contains
   subroutine run_problem()
 
     use particle,  only: particle_init
-    use tally, only: tally_init
-
 
     integer :: n  ! history loop counter
     integer :: i  ! counter for tallies
-
-    ! initialize rng
-    call initialize_rng()
-
-    ! initialize tallies
-    do i = 1,geo%n_slabs
-      call tally_init(tal(i))
-    end do
 
     ! initialize the random number generator
     call initialize_rng()
@@ -49,21 +39,11 @@ contains
       ! initialize particle
       call particle_init(neutron, geo%length)
 
-#ifdef DEBUG
-     print *,'Neutron BORN'
-     print *,'Neutron is at x:', neutron%xloc
-     print *,'Neutron mu is:', neutron%mu
-#endif
-
       ! reset track tallies
       call reset_tallies()
 
       ! determine which slab the particle is in
       neutron%slab = get_slab_id()
-
-#ifdef DEBUG
-      print *,'neutron is slab:', neutron%slab
-#endif
 
       ! begin loop around particle's life
       LIFE: do while (neutron%alive)
@@ -110,28 +90,12 @@ contains
       ! compute x component
       newx = neutron%xloc + s*neutron%mu 
 
-#ifdef DEBUG
-      print *,'s =',s
-#endif
-
-      ! compute x component
-      newx = neutron%xloc + neutron%mu * s
-
-#ifdef DEBUG
-      print *,'newx =',newx
-#endif
-
       ! get nearest neigbor
       if (neutron%mu > 0.0) then
         neig = float(neutron%slab)*geo%dx
       else
         neig = float(neutron%slab - 1)*geo%dx
       end if
-
-
-#ifdef DEBUG
-      print *,'Neighbor is:',neig
-#endif
 
       ! check for surface crossing
       if ( (neutron%mu < 0.0 .and. newx < neig) .or.                           &
@@ -174,10 +138,6 @@ contains
         ! set resample to false
         resample = .false.
 
-#ifdef DEBUG
-        print *,'Collision occurred move neutron to:', neutron%xloc
-#endif
-
       end if
 
     end do 
@@ -199,10 +159,6 @@ contains
 
     if ( id == 1 ) then
 
-#ifdef DEBUG
-      print *,'Neutron absorbed'
-#endif
-
       ! kill particle
       neutron%alive = .false.
 
@@ -210,17 +166,6 @@ contains
 
       ! sample new angle
       neutron%mu = get_scatter_mu()
-
-#ifdef DEBUG
-      print *,'Neutron scattered'
-#endif
-
-      ! sample new angle
-      neutron%mu = get_scatter_mu()
-
-#ifdef DEBUG
-      print *,'New angle:',neutron%mu
-#endif
 
     end if
 
